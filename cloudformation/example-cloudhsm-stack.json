@@ -1,0 +1,256 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters" : {
+        "KeyName": {
+            "Description" : "Key pair name to access ec2 instances.",
+            "Type": "String"
+        },
+        "AdminIP": {
+            "Description" : "Source Admin (e.g. home/office) IP in CIDR format to limit traffic ingress.",
+            "Type": "String",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/32."
+        },
+        "Owner": {
+            "Description" : "Owner of the AWS resources.",
+            "Type": "String"
+        },
+        "AMI": {
+            "Description" : "Amazon Image Id in eu-west-2",
+            "Type": "String",
+            "Default": "ami-03e88be9ecff64781"
+        },
+        "InstanceType": {
+            "Description" : "Instance type (default: free tier t2.micro).",
+            "Type": "String",
+            "Default": "t2.micro"
+        },
+        "AssociatePublicIP": {
+            "Description" : "Associate public IP.",
+            "Type": "String",
+            "Default": "false"
+        },
+        "UserData": {
+            "Description" : "Commands to run on instance creation.",
+            "Type": "String",
+            "Default": "#!/bin/bash\nyum update -y\n"
+        }
+    },
+    "Resources": {
+        "TestVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "10.0.0.0/16",
+                "EnableDnsSupport": "true",
+                "EnableDnsHostnames": "true",
+                "InstanceTenancy": "default",
+                "Tags" : [
+                    {
+                        "Key" : "Name",
+                        "Value" : "HSM Test VPC"
+                    },
+                    {
+                        "Key" : "Owner",
+                        "Value" : {"Ref": "Owner"}
+                    }
+                ]
+            }
+        },
+        "HsmVpcIdSsmParam": {
+            "Type": "AWS::SSM::Parameter",
+            "Properties": {
+                "Name": "/hsm-automation/vpc-id",
+                "Type": "String",
+                "Value": {"Ref": "TestVPC"},
+                "Description": "SSM Parameter supporting cloudhsm automation scripts."
+            }
+        },
+        "Subnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "TestVPC"
+                },
+                "CidrBlock": "10.0.0.0/24",
+                "MapPublicIpOnLaunch": "false",
+                "AvailabilityZone": "eu-west-2a",
+                "Tags": [
+                    {
+                        "Key" : "Name",
+                        "Value" : "HSM Test Subnet 1"
+                    },
+                    {
+                        "Key": "Owner",
+                        "Value": {"Ref": "Owner"}
+                    },
+                    {
+                        "Key" : "hsm-enabled",
+                        "Value" : true
+                    }
+                ]
+            }
+        },
+        "Subnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "TestVPC"
+                },
+                "CidrBlock": "10.0.1.0/24",
+                "MapPublicIpOnLaunch": "false",
+                "AvailabilityZone": "eu-west-2b",
+                "Tags": [
+                    {
+                        "Key" : "Name",
+                        "Value" : "HSM Test Subnet 2"
+                    },
+                    {
+                        "Key": "Owner",
+                        "Value": {"Ref": "Owner"}
+                    },
+                    {
+                        "Key" : "hsm-enabled",
+                        "Value" : true
+                    }
+                ]
+            }
+        },
+        "TestIG": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key" : "Name",
+                        "Value" : "HSM Test IG"
+                    },
+                    {
+                        "Key": "Owner",
+                        "Value": {"Ref": "Owner"}
+                    }
+                ]
+            }
+        },
+        "VPCIGAttachment": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "TestVPC"
+                },
+                "InternetGatewayId": {
+                    "Ref": "TestIG"
+                }
+            }
+        },
+        "PubRT": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "TestVPC"
+                }
+            }
+        },
+        "PubRTRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PubRT"
+                },
+                "GatewayId": {
+                    "Ref": "TestIG"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0"
+            }
+        },
+        "Subnet1RTAssoc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PubRT"
+                },
+                "SubnetId": {
+                    "Ref": "Subnet1"
+                }
+            }
+        },
+        "Subnet2RTAssoc": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "PubRT"
+                },
+                "SubnetId": {
+                    "Ref": "Subnet2"
+                }
+            }
+        },
+        "HsmClientSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupName": "HsmClientSG",
+                "GroupDescription": "Allow ec2 SSH/HSM traffic, HSM ingress rule added later by automation script.",
+                "VpcId": {
+                    "Ref": "TestVPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "CidrIp": { "Ref": "AdminIP" }
+                    }
+                ],
+                "Tags" : [
+                    {
+                        "Key" : "Name",
+                        "Value" : "HSM Client SG"
+                    },
+                    {
+                        "Key" : "Owner",
+                        "Value" : {"Ref": "Owner"}
+                    },
+                    {
+                        "Key" : "py-automation-key",
+                        "Value" : "hsm-client-sg"
+                    }
+                ]
+            }
+        },
+        "HsmClientSrv1": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+            	"ImageId" : {"Ref" : "AMI"},
+        		"InstanceType" : {"Ref" : "InstanceType"},
+                "KeyName": {"Ref" : "KeyName"},
+                "UserData": { "Fn::Base64" : {"Ref":"UserData"} },
+        		"BlockDeviceMappings" : [
+          			{
+            			"DeviceName" : "/dev/xvda",
+            			"Ebs" : {
+              			"VolumeType" : "gp2",
+              			"DeleteOnTermination" : "true",
+              			"VolumeSize" : "8"
+            			}
+          			}		
+        		],
+        		"NetworkInterfaces": [
+        			{
+            			"SubnetId": {"Ref": "Subnet1"},
+            			"AssociatePublicIpAddress": {"Ref" : "AssociatePublicIP"},
+            			"DeviceIndex": "0",
+            			"GroupSet": [{ "Ref" : "HsmClientSG" }]
+        			}
+    			],
+                "Tags" : [
+                    {
+                        "Key" : "Name",
+                        "Value" : "HSM Client Server 1"
+                    },
+                    {
+                        "Key" : "Owner",
+                        "Value" : {"Ref": "Owner"}
+                    }
+                ]
+            }
+        }
+    }
+}

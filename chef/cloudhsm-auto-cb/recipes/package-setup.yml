@@ -1,0 +1,47 @@
+#
+# Cookbook:: cloudhsm-auto-cb
+# Recipe:: package-setup
+# Description:: Installs the base set of packages on EC2 to enable CloudHSM provisioning.
+# Author:: Stephen Pitchfork (s.pitchfork@googlemail.com)
+#
+# Copyright:: 2022, The Authors, All Rights Reserved.
+resources:
+# *** Python installation and pip upgrade ***
+ - type: "package"
+   name: "python3"
+   action:
+    - install
+ - type: "execute"
+   name: "pip3_upgrade"
+   command: "pip3 install --upgrade pip"
+   action:
+    - run
+
+# *** Git installation ***
+ - type: "package"
+   name: "git"
+   action:
+    - install
+
+# *** CloudHSM client binary download (not available via yum) and installation ***
+ - type: "directory"
+   name: "/cloudhsm-auto-stage"
+   owner: "ec2-user"
+   group: "ec2-user"
+   mode: "750"
+   action:
+    - create
+ - type: "remote_file"
+   # TODO - this needs to be parameterised
+   name: "/cloudhsm-auto-stage/cloudhsm-client-latest.el7.x86_64.rpm"
+   source: "https://s3.amazonaws.com/cloudhsmv2-software/CloudHsmClient/EL7/cloudhsm-client-latest.el7.x86_64.rpm"
+   owner: "ec2-user"
+   group: "ec2-user"
+   mode: "750"
+   action:
+    - create
+ - type: "package"
+   name: "cloudhsm-client"
+   source: "/cloudhsm-auto-stage/cloudhsm-client-latest.el7.x86_64.rpm"
+   action:
+    - install

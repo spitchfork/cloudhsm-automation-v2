@@ -1,0 +1,24 @@
+#
+# Cookbook:: cloudhsm-auto-cb
+# Recipe:: env-setup
+# Description:: Configures the environment to enable CloudHSM provisioning.
+# Author:: Stephen Pitchfork (s.pitchfork@googlemail.com)
+#
+# Copyright:: 2022, The Authors, All Rights Reserved.
+resources:
+# Clone the python automation scripts from Git
+ - type: "git"
+   name: "/cloudhsm-auto-stage/py-aws-cloudhsm-utils"
+   repository: "https://github.com/spitchfork/py-aws-cloudhsm-utils.git"
+   revision: "main"
+   group: ec2-user
+   user: ec2-user
+   action:
+    - sync
+
+# Install the required python module files
+ - type: "execute"
+   name: "pip3_install_requirements"
+   command: "pip3 install -r /cloudhsm-auto-stage/py-aws-cloudhsm-utils/requirements.txt"
+   action:
+    - run

@@ -1,0 +1,7 @@
+name 'cloudhsm-auto-cb'
+maintainer 'Stephen Pitchfork'
+maintainer_email 's.pitchfork@googlemail.com'
+license 'All Rights Reserved'
+description 'Installs/Configures cloudhsm-auto-cb'
+version '0.1.0'
+chef_version '>= 16.0'
