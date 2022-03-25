@@ -221,6 +221,7 @@
             	"ImageId" : {"Ref" : "AMI"},
         		"InstanceType" : {"Ref" : "InstanceType"},
                 "KeyName": {"Ref" : "KeyName"},
+				"IamInstanceProfile": {"Ref" : "HsmClientInstanceProfile"},
                 "UserData": { "Fn::Base64" : {"Ref":"UserData"} },
         		"BlockDeviceMappings" : [
           			{
@@ -248,6 +249,75 @@
                     {
                         "Key" : "Owner",
                         "Value" : {"Ref": "Owner"}
+                    }
+                ]
+            }
+        },
+		"HsmClientRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "HsmClientPolicy",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+										"ec2:AuthorizeSecurityGroupEgress",
+										"ec2:AuthorizeSecurityGroupIngress",
+										"ec2:DescribeSecurityGroups",
+										"ec2:CreateSecurityGroup",
+										"ec2:RevokeSecurityGroupEgress",
+										"ec2:DescribeSubnets",
+										"cloudhsm:CreateHsm",
+										"cloudhsm:ModifyCluster",
+										"cloudhsm:DeleteHsm",
+										"cloudhsm:DescribeClusters",
+										"cloudhsm:CreateCluster",
+										"cloudhsm:DeleteCluster",
+										"cloudhsm:InitializeCluster",
+										"cloudhsm:DescribeHsm",
+										"s3:CreateBucket",
+										"s3:ListBucket",
+										"s3:PutObject",
+										"s3:GetObject",
+										"s3:ListAllMyBuckets"
+									],
+                                    "Resource": "*"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "HsmClientInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "InstanceProfileName": "HsmClientInstanceProfile",
+				"Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "HsmClientRole"
                     }
                 ]
             }
