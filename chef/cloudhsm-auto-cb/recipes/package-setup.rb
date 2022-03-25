@@ -1,4 +1,10 @@
-# Autoconverted recipe from .\package-setup.yml
+#
+# Cookbook:: cloudhsm-auto-cb
+# Recipe:: package-setup
+# Description:: Installs the requisite packages and downloads/installs the CloudHSM client binary from the public repo
+# Author:: Stephen Pitchfork (s.pitchfork@googlemail.com)
+#
+# Copyright:: 2022, The Authors, All Rights Reserved.
 
 package 'python3' do
   action :install

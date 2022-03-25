@@ -18,8 +18,12 @@ transport:
 platforms:
   - name: amazon
     driver:
-      associate_public_ip: true
       image_id: ami-03e88be9ecff64781
+      instance_type: t2.micro
+      associate_public_ip: true
+      region: eu-west-2
+      subnet_id: subnet-00112e8b37123d28e
+      iam_profile_name: HsmClientInstanceProfile
     transport:
       username: ec2-user
 

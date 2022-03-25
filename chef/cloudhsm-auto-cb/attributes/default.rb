@@ -1,3 +1,4 @@
+default["cloudhsm_auto"]["region"] = "eu-west-2"
 default["cloudhsm_auto"]["staging_dir"] = "/cloudhsm-auto-stage"
 default["cloudhsm_auto"]["cloudhsm_client_src_uri"] = "https://s3.amazonaws.com/cloudhsmv2-software/CloudHsmClient/EL7/cloudhsm-client-latest.el7.x86_64.rpm"
 default["cloudhsm_auto"]["cloudhsm_client_dst"] = "/cloudhsm-auto-stage/cloudhsm-client-latest.el7.x86_64.rpm"
@@ -7,3 +8,4 @@ default["cloudhsm_auto"]["py_cloudhsm_utils_repo"] = "https://github.com/spitchf
 default["cloudhsm_auto"]["py_cloudhsm_utils_dir"] = "/cloudhsm-auto-stage/py-aws-cloudhsm-utils"
 default["cloudhsm_auto"]["py_cloudhsm_utils_rev"] = "main"
 default["cloudhsm_auto"]["py_cloudhsm_utils_req_cmd"] = "pip3 install -r /cloudhsm-auto-stage/py-aws-cloudhsm-utils/requirements.txt"
+default["cloudhsm_auto"]["py_cloudhsm_utils_create_cmd"] = "python3 /cloudhsm-auto-stage/py-aws-cloudhsm-utils/create_hsm_cluster.py"
