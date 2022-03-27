@@ -8,5 +8,7 @@
 
 execute 'create_cluster' do
   command node['cloudhsm_auto']['py_cloudhsm_utils_create_cmd']
+  cwd node['cloudhsm_auto']['py_cloudhsm_utils_dir']
+  live_stream true
   action :run
 end
