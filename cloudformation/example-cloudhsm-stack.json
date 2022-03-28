@@ -1,10 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Parameters" : {
-        "KeyName": {
-            "Description" : "Key pair name to access ec2 instances.",
-            "Type": "String"
-        },
         "AdminIP": {
             "Description" : "Source Admin (e.g. home/office) IP in CIDR format to limit traffic ingress.",
             "Type": "String",
@@ -14,26 +10,6 @@
         "Owner": {
             "Description" : "Owner of the AWS resources.",
             "Type": "String"
-        },
-        "AMI": {
-            "Description" : "Amazon Image Id in eu-west-2",
-            "Type": "String",
-            "Default": "ami-03e88be9ecff64781"
-        },
-        "InstanceType": {
-            "Description" : "Instance type (default: free tier t2.micro).",
-            "Type": "String",
-            "Default": "t2.micro"
-        },
-        "AssociatePublicIP": {
-            "Description" : "Associate public IP.",
-            "Type": "String",
-            "Default": "false"
-        },
-        "UserData": {
-            "Description" : "Commands to run on instance creation.",
-            "Type": "String",
-            "Default": "#!/bin/bash\nyum update -y\n"
         }
     },
     "Resources": {
@@ -215,44 +191,6 @@
                 ]
             }
         },
-        "HsmClientSrv1": {
-            "Type": "AWS::EC2::Instance",
-            "Properties": {
-            	"ImageId" : {"Ref" : "AMI"},
-        		"InstanceType" : {"Ref" : "InstanceType"},
-                "KeyName": {"Ref" : "KeyName"},
-				"IamInstanceProfile": {"Ref" : "HsmClientInstanceProfile"},
-                "UserData": { "Fn::Base64" : {"Ref":"UserData"} },
-        		"BlockDeviceMappings" : [
-          			{
-            			"DeviceName" : "/dev/xvda",
-            			"Ebs" : {
-              			"VolumeType" : "gp2",
-              			"DeleteOnTermination" : "true",
-              			"VolumeSize" : "8"
-            			}
-          			}		
-        		],
-        		"NetworkInterfaces": [
-        			{
-            			"SubnetId": {"Ref": "Subnet1"},
-            			"AssociatePublicIpAddress": {"Ref" : "AssociatePublicIP"},
-            			"DeviceIndex": "0",
-            			"GroupSet": [{ "Ref" : "HsmClientSG" }]
-        			}
-    			],
-                "Tags" : [
-                    {
-                        "Key" : "Name",
-                        "Value" : "HSM Client Server 1"
-                    },
-                    {
-                        "Key" : "Owner",
-                        "Value" : {"Ref": "Owner"}
-                    }
-                ]
-            }
-        },
 		"HsmClientRole": {
             "Type": "AWS::IAM::Role",
             "Properties": {
@@ -288,6 +226,9 @@
 										"ec2:CreateSecurityGroup",
 										"ec2:RevokeSecurityGroupEgress",
 										"ec2:DescribeSubnets",
+										"ec2:CreateNetworkInterface",
+										"ec2:DeleteNetworkInterface",
+										"ec2:DescribeNetworkInterfaces",
 										"cloudhsm:CreateHsm",
 										"cloudhsm:ModifyCluster",
 										"cloudhsm:DeleteHsm",
