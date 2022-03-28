@@ -11,9 +11,9 @@ Currently automates:
 
 ## How To Use (locally)
 1. Create a cloudformation stack to provision the core infrastructure (VPC, Subnets, EC2 instances etc.) or use your own e.g.  
-`aws cloudformation create-stack --stack-name hsm-test --template-body file://example-cloudhsm-stack.json --parameters ParameterKey=AdminIP,ParameterValue=<Your IP>/32 ParameterKey=Owner,ParameterValue=<Your Name> ParameterKey=KeyName,ParameterValue=<Your KeyPair Name> ParameterKey=AssociatePublicIP,ParameterValue=true --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM`
+`aws cloudformation create-stack --stack-name hsm-test --template-body file://example-cloudhsm-stack.json --parameters ParameterKey=AdminIP,ParameterValue=<Your IP>/32 ParameterKey=Owner,ParameterValue=<Your Name> --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM`
 2. (Optional) Update the parameters in config.ini to meet your own VPC configuration if required
-3. Update the kitchen.yml subnet_id field to match a subnet created by CloudFormation and update the ssh key fields
+3. Update the kitchen.yml subnet_id and security_group_ids fields to match those created by CloudFormation and update the ssh key fields
 4. Create your test kitchen and converge
 
 ## Production Considerations - ** READ! **
