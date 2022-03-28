@@ -22,8 +22,16 @@ platforms:
       instance_type: t2.micro
       associate_public_ip: true
       region: eu-west-2
-      subnet_id: subnet-00112e8b37123d28e
+      # Ensure test kitchen creates the ec2 instance in our HSM VPC
+      # Update this after the CloudFormation run
+      subnet_id: subnet-070...
+      # Ensure test kitchen uses the Security Group created by CloudFormation
+      # Update this after the CloudFormation run
+      security_group_ids:
+        - sg-0ba...
       iam_profile_name: HsmClientInstanceProfile
+      tags:
+        Name: 'Test Kitchen HSM Client'
     transport:
       username: ec2-user
 
