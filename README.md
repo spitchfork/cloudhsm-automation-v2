@@ -20,6 +20,7 @@ Currently automates:
 - I DO NOT consider this production ready at this time, however if you want to production(ise) it please consider the below (and more) 
 - The provided CloudFormation template creates a vanilla VPC with two public and private subnets with access locked down via a security group on the ec2 instance.
     - I HIGHLY recommend you move away from bastion hosts and use Session Manager for remote access instead.
+- Furthermore, the Cfn template provided has an IAM policy that SHOULD be improved in line with the principle of least privilege.  It is permissive at present due to being in development.
 - The framework currently relies upon fetching the supporting Python code from Github for simplicity - in a production environment you should not have cart-blanche access to the Internet in this manner so you may want to consider internal Git repo's or S3 instead.
 - Similar to the above, the CloudHSM client binary is fetched from the Internet - you really should consider moving the binary to an internal artefact store such as Nexus etc.
 
