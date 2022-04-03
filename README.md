@@ -16,10 +16,15 @@ Currently automates:
 3. Update the kitchen.yml subnet_id and security_group_ids fields to match those created by CloudFormation and update the ssh key fields
 4. Create your test kitchen and converge
 
+## Dependencies - ** READ! **
+- This project has a dependency on https://github.com/spitchfork/py-aws-cloudhsm-utils which provides a number of Python helper scripts
+- It is git cloned as part of the Chef recipe so make sure your VPC has Internet access either via through an IG or Nat gateway
+- At some point in the future I will add functionality to get this dependency from S3 as Internet access to github is NOT a good idea :-)
+
 ## Production Considerations - ** READ! **
 - I DO NOT consider this production ready at this time, however if you want to production(ise) it please consider the below (and more) 
 - The provided CloudFormation template creates a vanilla VPC with two public and private subnets with access locked down via a security group on the ec2 instance.
-    - I HIGHLY recommend you move away from bastion hosts and use Session Manager for remote access instead.
+    - I STRONGLY recommend you move away from bastion hosts and use Session Manager for remote access instead.
 - Furthermore, the Cfn template provided has an IAM policy that SHOULD be improved in line with the principle of least privilege.  It is permissive at present due to being in development.
 - The framework currently relies upon fetching the supporting Python code from Github for simplicity - in a production environment you should not have cart-blanche access to the Internet in this manner so you may want to consider internal Git repo's or S3 instead.
 - Similar to the above, the CloudHSM client binary is fetched from the Internet - you really should consider moving the binary to an internal artefact store such as Nexus etc.
