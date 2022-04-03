@@ -242,7 +242,8 @@
 										"s3:PutObject",
 										"s3:GetObject",
 										"s3:ListAllMyBuckets",
-										"ssm:GetParameter"
+										"ssm:GetParameter",
+                                        "ssm:PutParameter"
 									],
                                     "Resource": "*"
                                 }
